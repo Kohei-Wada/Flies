@@ -1,6 +1,6 @@
 OBJS=flies.o
 SRCS=$(OBJS:%.0=%.c)
-CFLAGS=-g -Wall
+CFLAGS=-g -Wall -lm
 LDLIBS=
 TARGET=flies
 $(TARGET):$(OBJS)

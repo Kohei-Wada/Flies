@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
+
 
 #define X 200
 #define Y 50
@@ -21,37 +23,37 @@ int stage[X][Y] = {0};
 
 
 struct FLY fly[N], food;
-int rangeX = X/2;
-int rangeY = Y/2;
+int range = sqrt(X*X * Y*Y);
 
 
 
 void next_v()
 {
-int index, dx, dy;
+int index, dx, dy, d;
 
     if(food.x > 0 && food.y > 0){
         for(index = 0; index < N; ++index){
 
             dx = food.x - fly[index].x;
             dy = food.y - fly[index].y;
+            d  = sqrt(dx*dx + dy*dy);
 
 
-            if(dx > 0 && dx < rangeX)
+            if(dx > 0 && d < range)
                 fly[index].v[0] = rand()%2 *1;
             else if(dx == 0){}
                 //boid[index].v[0] = 0;
-            else if(dx < 0 && abs(dx) < rangeX)
+            else if(dx < 0 && d < range)
                 fly[index].v[0] = rand()%2 *(-1);
             else
                 fly[index].v[0] = rand()%2 * (rand()%2 == 0? 1 : -1);
 
 
-            if(dy > 0 && dy < rangeY)
+            if(dy > 0 && d < range)
                 fly[index].v[1] = rand()%2 *1;
             else if(dy ==  0){}
                 //boid[index].v[1] = 0;
-            else if(dy < 0 && abs(dy) < rangeY)
+            else if(dy < 0 && d < range)
                 fly[index].v[1] = rand()%2 *(-1);
             else
                 fly[index].v[1] = rand()%2 * (rand()%2 == 0? 1 : -1);
