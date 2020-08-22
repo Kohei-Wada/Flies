@@ -1,171 +1,172 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
 #include <unistd.h>
-#include <math.h>
-
+#include <string.h>
 
 #define X 200
 #define Y 50
-#define N 15
+#define N 50
 
 
-
-
-struct FLY{
+typedef struct _FLY {
+    int vx;
+    int vy;
     int x;
     int y;
-    int v[2];
-};
+    int life;
+}FLY;
+
+
+typedef struct _FOOD {
+    int x;
+    int y;
+    int life;
+}FOOD;
+
+
 
 
 int stage[X][Y] = {0};
+FLY fly[N];
+FOOD food;
+int range = sqrt(X*X + Y*Y)/4;
 
 
-struct FLY fly[N], food;
-int range = sqrt(X*X * Y*Y);
 
-
-
-void next_v()
+void display(void)
 {
-int index, dx, dy, d;
+    for(int y = 0; y < Y; ++y){
+        for(int x = 0; x < X; ++x){
 
-    if(food.x > 0 && food.y > 0){
-        for(index = 0; index < N; ++index){
-
-            dx = food.x - fly[index].x;
-            dy = food.y - fly[index].y;
-            d  = sqrt(dx*dx + dy*dy);
-
-
-            if(dx > 0 && d < range)
-                fly[index].v[0] = rand()%2 *1;
-            else if(dx == 0){}
-                //boid[index].v[0] = 0;
-            else if(dx < 0 && d < range)
-                fly[index].v[0] = rand()%2 *(-1);
+            if(stage[x][y] == 1)
+                printf("+");
+            else if(stage[x][y] == 2)
+                printf("F");
             else
-                fly[index].v[0] = rand()%2 * (rand()%2 == 0? 1 : -1);
-
-
-            if(dy > 0 && d < range)
-                fly[index].v[1] = rand()%2 *1;
-            else if(dy ==  0){}
-                //boid[index].v[1] = 0;
-            else if(dy < 0 && d < range)
-                fly[index].v[1] = rand()%2 *(-1);
-            else
-                fly[index].v[1] = rand()%2 * (rand()%2 == 0? 1 : -1);
+                printf(" ");
         }
-    }
-
-    else{
-        for(index = 0; index < N; ++index){
-            fly[index].v[0] = rand()%2 * (rand()%2 == 0? 1 : -1);
-            fly[index].v[1] = rand()%2 * (rand()%2 == 0? 1 : -1);
-        }
-    }
-
-}
-
-
-
-void next_flies()
-{
-int index;
-    next_v();
-
-    for(index = 0; index < N; ++index){
-        fly[index].x += fly[index].v[0];
-        fly[index].y += fly[index].v[1];
+        printf("\n");
     }
 }
 
 
 
-void init()
+void init(void)
 {
-int index;
-
     srand((unsigned int)time(NULL));
 
-    for(index = 0; index < N; ++index){
-        fly[index].x    = rand()%X;
-        fly[index].y    = rand()%Y;
-        fly[index].v[0] = rand()%4;
-        fly[index].v[1] = rand()%4;
+    for(int n = 0; n < N; ++n){
+        fly[n].x = rand()%X;
+        fly[n].y = rand()%Y;
+        fly[n].vx = 0;
+        fly[n].vy = 0;
     }
+
+    food.x = rand()%X;
+    food.y = rand()%Y;
 }
 
 
 
 
-void print_stage()
+void set_stage(void)
 {
-int x, y, index;
+    memset(stage, 0, sizeof(stage));
+    for(int n = 0; n < N; ++n){
+        if(0 < fly[n].x && fly[n].x < X && 0 < fly[n].y && fly[n].y < Y)
+            stage[fly[n].x][fly[n].y] = 1;
+    }
+    if(0 < food.x  && 0 < food.y)
+        stage[food.x][food.y] = 2;
+}
 
-    for(y = 0; y < Y; ++y){
-        for(x = 0; x < X; ++x){
-            if(x == food.x && y == food.y){
-                printf("\x1b[1m");
-                printf("F");
-                printf("\x1b[0m");
+
+
+
+void next_fly_v(void)
+{
+
+    if(0 < food.x && 0 < food.y){
+        for(int n = 0; n < N; ++n){
+            int dx = food.x - fly[n].x;
+            int dy = food.y - fly[n].y;
+            int d  = sqrt(dx*dx + dy*dy);
+
+            if(d < range){
+                if(dx > 0)
+                    fly[n].vx = rand()%2;
+                else
+                    fly[n].vx = rand()%2 * (-1);
+
+                if(dy > 0)
+                    fly[n].vy = rand()%2;
+                else
+                    fly[n].vy = rand()%2 * (-1);
+
             }
-
-
             else{
-                for(index = 0; index < N; ++index){
-                    if(x == fly[index].x && y == fly[index].y){
-                        //printf("\x1b[31m");
-                        printf("+");
-                        //printf("\x1b[39m");
-                    }
-                }
+                fly[n].vx = rand()%3 - 1;
+                fly[n].vy = rand()%3 - 1;
             }
-
-            printf(" ");
-
         }
+    }
+    else{
+        for(int n = 0; n < N; ++n){
+            fly[n].vx = rand()%3 - 1;
+            fly[n].vy = rand()%3 - 1;
+        }
+    }
+}
 
-        printf("\n");
 
+
+void next_flies(void)
+{
+    next_fly_v();
+    for(int n = 0; n < N; ++n){
+        fly[n].x += fly[n].vx;
+        fly[n].y += fly[n].vy;
     }
 }
 
 
 
 
-void set_food()
+void set_food(int counter)
 {
-    food.x    = rand()%X;
-    food.y    = rand()%Y;
-    //food.v[0] = rand()%4;
-    //food.v[1] = rand()%4;
+    if(counter % 200 == 0){
+        food.x = rand()%X;
+        food.y = rand()%Y;
+    }
+
+    else if(counter % 100 == 0){
+        food.x = -1;
+        food.y = -1;
+    }
 }
+
 
 
 
 int main(void)
 {
-int time = 1000000 * 0.1;
 int counter = 0;
+int time = 1000000 * 0.1;
 
     init();
 
     while(1){
-        if((counter % 200) == 0)
-            food.x = food.y = -1;
-        else if((counter % 100) == 0)
-            set_food();
-
         system("clear");
-        //printf("\033[2J");
-        print_stage();
+        set_stage();
+        display();
         next_flies();
+        set_food(counter);
         usleep(time);
         ++counter;
 
     }
     return 0;
+
 }

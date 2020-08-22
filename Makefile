@@ -1,7 +1,7 @@
 OBJS=flies.o
-SRCS=$(OBJS:%.0=%.c)
-CFLAGS=-g -Wall -lm
-LDLIBS=
+SRCS=$(OBJS:%.o=%.c)
+CFLAGS=-g -Wall
+LDLIBS=-lm
 TARGET=flies
 $(TARGET):$(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
